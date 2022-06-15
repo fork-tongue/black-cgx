@@ -3,7 +3,11 @@ from os.path import relpath
 from pathlib import Path
 
 import black
-import tomli
+
+try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib
 from collagraph.cgx import cgx
 
 
@@ -27,7 +31,7 @@ def load_black_mode_from_config(pyproject_path):
     if pyproject_path.is_file():
         try:
             with pyproject_path.open(mode="rb") as toml_file:
-                pyproject_toml = tomli.load(toml_file)
+                pyproject_toml = tomllib.load(toml_file)
         except ValueError:
             raise BadBlackConfig(relpath(pyproject_path))
 
