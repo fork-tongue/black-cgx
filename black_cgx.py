@@ -100,8 +100,12 @@ def format(path, mode=None, check=False):
     return 0
 
 
-def main():
+def main(argv=None):
     import argparse
+    import sys
+
+    if argv is None:
+        argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser(description="Format cgx files with black")
     parser.add_argument("--check", action="store_true")
@@ -112,7 +116,7 @@ def main():
         default=[Path(".")],
         help="path(s) of files and/or folders to format",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     modes = {}
 
@@ -129,7 +133,8 @@ def main():
                     file, mode=load_black_mode(file, modes), check=args.check
                 )
 
-    exit(code)
+    if code:
+        exit(code)
 
 
 if __name__ == "__main__":
