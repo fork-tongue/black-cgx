@@ -133,7 +133,8 @@ def main(argv=None):
                     file, mode=load_black_mode(file, modes), check=args.check
                 )
 
-    exit(code)
+    if code:
+        exit(code)
 
 
 if __name__ == "__main__":
