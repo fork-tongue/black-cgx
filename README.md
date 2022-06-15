@@ -1,3 +1,6 @@
+[![PyPI version](https://badge.fury.io/py/black-cgx.svg)](https://badge.fury.io/py/black-cgx)
+[![CI status](https://github.com/fork-tongue/black-cgx/workflows/CI/badge.svg)](https://github.com/fork-tongue/black-cgx/actions)
+
 # Black-cgx
 
 Format CGX files with black.
