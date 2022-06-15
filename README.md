@@ -1,5 +1,6 @@
 [![PyPI version](https://badge.fury.io/py/black-cgx.svg)](https://badge.fury.io/py/black-cgx)
 [![CI status](https://github.com/fork-tongue/black-cgx/workflows/CI/badge.svg)](https://github.com/fork-tongue/black-cgx/actions)
+[![black](https://img.shields.io/badge/code%20style-black-black)](https://pypi.org/project/black/)
 
 # Black-cgx
 
