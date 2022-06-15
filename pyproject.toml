@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Black for cgx files"
 authors = ["Berend Klein Haneveld <berendkleinhaneveld@gmail.com>"]
 license = "MIT"
+readme = "README.md"
 classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
