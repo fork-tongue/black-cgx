@@ -10,6 +10,8 @@ except ImportError:
     import tomli as tomllib
 from collagraph.cgx import cgx
 
+from template import format_template
+
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +63,25 @@ def load_black_mode(path, modes=None):
     return modes[pyproject_path]
 
 
-def format(path, mode=None, check=False):
-    """Format CGX files (the contents of the script tag) with black"""
+def format_script(script_node, lines, mode=None):
+    start, end = script_node.location[0], script_node.end[0] - 1
+
+    source = "".join(lines[start:end])
+    try:
+        formatted_source = black.format_file_contents(source, fast=False, mode=mode)
+        return formatted_source, (start, end)
+    except black.report.NothingChanged:
+        return lines[start:end], (start, end)
+
+
+def format_file(path, mode=None, check=False, write=True):
+    """
+    Format CGX files (the contents of the script tag) with black
+    Returns 0 if everything succeeded, or nothing changed.
+    Returns 1 when running check and something would change.
+    Returns list of lines when write is set to False instead
+    of an error code (used for the test-suite).
+    """
     path = Path(path)
     if path.suffix != ".cgx":
         return
@@ -73,30 +92,40 @@ def format(path, mode=None, check=False):
     parser = cgx.CGXParser()
     parser.feed(path.read_text())
 
-    # Find beginning and end of script block
-    script_node = parser.root.child_with_tag("script")
-    start, end = script_node.location[0], script_node.end[0] - 1
-
-    with open(path, mode="r") as fh:
+    with path.open(mode="r") as fh:
         lines = fh.readlines()
 
-    source = "".join(lines[start:end])
-    try:
-        formatted_source = black.format_file_contents(source, fast=False, mode=mode)
-        if check:
+    script_node = parser.root.child_with_tag("script")
+    template_node = parser.root.child_with_tag("template")
+
+    script_content, script_location = format_script(script_node, lines, mode=mode)
+    template_content, template_location = format_template(
+        template_node, lines, parser=parser
+    )
+
+    changed = (
+        lines[script_location[0] : script_location[1]] != script_content
+        or lines[template_location[0] : template_location[1]] != template_content
+    )
+    if check:
+        if changed:
             logger.warning(f"Would change: {path}")
             return 1
+        else:
+            return 0
 
-        lines[start:end] = formatted_source
+    if script_location[0] > template_location[0]:
+        lines[script_location[0] : script_location[1]] = script_content
+        lines[template_location[0] : template_location[1]] = template_content
+    else:
+        lines[script_location[0] : script_location[1]] = script_content
+        lines[template_location[0] : template_location[1]] = template_content
+    if not write:
+        return lines
 
-        logger.warning(f"Blackened: {path}")
-        with open(path, mode="w") as fh:
+    if changed:
+        with path.open(mode="w") as fh:
             fh.writelines(lines)
-    except black.report.NothingChanged:
-        pass
-    except Exception as e:
-        logger.exception(e)
-        return 1
     return 0
 
 
@@ -126,10 +155,12 @@ def main(argv=None):
             pass
 
         if path.is_file():
-            code |= format(path, mode=load_black_mode(path, modes), check=args.check)
+            code |= format_file(
+                path, mode=load_black_mode(path, modes), check=args.check
+            )
         else:
             for file in path.glob("**/*.cgx"):
-                code |= format(
+                code |= format_file(
                     file, mode=load_black_mode(file, modes), check=args.check
                 )
 
