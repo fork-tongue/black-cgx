@@ -1,5 +1,6 @@
 from collagraph.cgx import cgx
 
+
 # The following definitions are needed to monkey-patch the CGXParser
 # When https://github.com/fork-tongue/collagraph/pull/115 is merged (and released)
 # this monkey-patch can be removed
